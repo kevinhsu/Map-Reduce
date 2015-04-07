@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Cloud9: A MapReduce Library for Hadoop &#187; Working with standard document collections</title>
+<style type="text/css" media="screen">@import url( ../style.css );</style>
+</head>
+
+<body>
+
+<div id="wrap">
+<div id="container" class="one-column" >
+
+<!-- header START -->
+
+<div id="header">
+<div id="caption">
+<h1 id="title" style="color: white;">Cloud<sup><small>9</small></sup></h1>
+<div id="tagline">A MapReduce Library for Hadoop</div>
+</div>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- header END -->
+
+<!-- navigation START -->
+
+<div id="navigation">
+
+<script type="text/javascript" src="menu.js">
+</script>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- navigation END -->
+
+
+
+<!-- content START -->
+
+<div id="content">
+
+
+
+	<!-- main START -->
+
+	<div id="main">
+
+
+<!--- START MAIN CONTENT HERE -->
+
+<h2>Working with standard document collections</h2>
+
+<div class="post">
+<div class="content">
+
+<p>The Cloud<sup><small>9</small></sup> library contains APIs for
+working with many document collections that are frequently used in
+information retrieval experiments.  This article provides an overview
+of these APIs.</p>
+
+<p>The class <code>edu.umd.cloud9.collection.Indexable</code> is an
+interface that represents a generic document.
+An <code>Indexable</code> object has a docid, which is a
+globally-unique String identifier for the document in the collection.
+For many types of information retrieval algorithms, documents in the
+collection must be sequentially numbered; thus, each document in the
+collection must be assigned a unique integer identifier, which is its
+docno.  The interface
+<code>edu.umd.cloud9.collection.DocnoMapping</code> provides the
+generic API to managing these mappings.  The mappings are managed on a
+collection-specific basis.  Typically, however, the docid to docno
+mappings are stored in a mappings file, which is loaded into memory by
+concrete objects implementing this interface.</p>
+
+<p>APIs for working with specific collections are located in the
+package hierarchy under <code>edu.umd.cloud9.collection.*</code>; see
+documentation for each individual collection below:</p>
+
+<ul>
+
+<li><code><a href="../api/edu/umd/cloud9/collection/medline/package-summary.html">edu.umd.cloud9.collection.medline</a></code>:
+MEDLINE citations (particularly, for the TREC 2004/2005 genomics
+tracks)</li>
+
+<li><code><a href="../api/edu/umd/cloud9/collection/trec/package-summary.html">edu.umd.cloud9.collection.trec</a></code>:
+the TREC collection, particularly disks 4 and 5</li>
+
+</ul>
+
+</div></div>
+
+<!--- END MAIN CONTENT HERE -->
+
+	</div>
+
+	<!-- main END -->
+
+
+
+		<div class="fixed"></div>
+
+</div>
+
+<!-- content END -->
+
+<!-- footer START -->
+
+<div id="footer">
+<div id="copyright">
+Last updated:
+<script type="text/javascript">
+<!--//
+document.write(document.lastModified);
+//-->
+</script>
+</div>
+
+<div id="themeinfo">
+Adapted from a WordPress Theme by <a href="http://www.neoease.com/">NeoEase</a>. Valid <a href="http://validator.w3.org/check?uri=referer">XHTML 1.1</a> and <a href="http://jigsaw.w3.org/css-validator/check/referer?profile=css3">CSS 3</a>.	</div>
+
+</div>
+
+<!-- footer END -->
+
+
+
+</div>
+
+<!-- container END -->
+
+</div>
+
+<!-- wrap END -->
+
+</body>
+</html>

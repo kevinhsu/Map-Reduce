@@ -1,0 +1,399 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Cloud9: A MapReduce Library for Hadoop &#187; Getting started with the Google/IBM CLuE cluster</title>
+<style type="text/css" media="screen">@import url( ../style.css );</style>
+</head>
+
+<body>
+
+<div id="wrap">
+<div id="container" class="one-column" >
+
+<!-- header START -->
+
+<div id="header">
+<div id="caption">
+<h1 id="title" style="color: white;">Cloud<sup><small>9</small></sup></h1>
+<div id="tagline">A MapReduce Library for Hadoop</div>
+</div>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- header END -->
+
+<!-- navigation START -->
+
+<div id="navigation">
+
+<script type="text/javascript" src="menu.js">
+</script>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- navigation END -->
+
+
+
+<!-- content START -->
+
+<div id="content">
+
+
+
+	<!-- main START -->
+
+	<div id="main">
+
+
+<!--- START MAIN CONTENT HERE -->
+
+<h2>Getting started with the Google/IBM CLuE cluster</h2>
+
+<div class="post">
+<div class="content">
+
+<p>These instructions are intended help you get onto the Google/IBM
+Hadoop cluster, available via the <a
+href="http://www.nsf.gov/pubs/2008/nsf08560/nsf08560.htm">NSF CLuE
+program</a> and the <a
+href="http://googleblog.blogspot.com/2007/10/let-thousand-servers-bloom.html">Google/IBM
+Academic Cloud Computing Initiative (ACCI)</a> to University of
+Maryland students who are working in the context of those two
+projects.</p>
+
+<p>In these instructions, I will refer to the following machines:</p>
+
+<ul>
+  <li>GATEWAY: the gateway machine (IP address)</li>
+  <li>JOBTRACKER: the node that runs the jobtracker (IP address)</li>
+  <li>NAMENODE: the HDFS name node (actual host name)</li>
+</ul>
+
+<p>You should have received this information separately.  I'm not
+publishing this information on the public web as a security
+measure.</p>
+
+</div></div>
+
+
+<div class="post">
+<h2>1. Download and unpack Hadoop</h2>
+<div class="content">
+
+<p>If you're using Cloud<sup><small>9</small></sup>, go through this
+guide to <a href="start-standalone.html">getting started in standalone
+mode</a> to make sure you're comfortable with the basics.</p>
+
+<p>The cluster is currently running a Cloudera distribution of Hadoop
+0.20.1; the actual tarball are
+available <a href="http://archive.cloudera.com/cdh/testing/">here</a>.
+The exact release (i.e., patch level) isn't too important, and even if
+I list it here, it'll probably get out of date quickly (if it is
+important to find out exactly what's running on the server, the
+jobtracker will tell you).  For the most part, a slight mistmatch in
+the release on the client and server won't cause any problems, so you
+could just pick the latest release.  You can even use
+the <a href="http://hadoop.apache.org/">stock Hadoop
+distribution</a>.</p>
+
+</div></div>
+
+
+<div class="post">
+<h2>2. Site up configuration files</h2>
+<div class="content">
+
+<p>We have to configure Hadoop.  Configuration parameters are stored
+in the conf directory under your base distribution path, in three
+separate files: core-site.xml, hdfs-site.xml, mapred-site.xml.</p>
+
+<p>The following configuration information goes
+in <b>core-site.xml</b>:</p>
+
+<pre>
+&lt;property&gt;
+  &lt;name&gt;fs.default.name&lt;/name&gt;
+  &lt;value&gt;NAMENODE&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+  &lt;name&gt;hadoop.job.ugi&lt;/name&gt;
+  &lt;value&gt;UGI&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+  &lt;name&gt;hadoop.rpc.socket.factory.class.default&lt;/name&gt;
+  &lt;value&gt;org.apache.hadoop.net.SocksSocketFactory&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+  &lt;name&gt;hadoop.socks.server&lt;/name&gt;
+  &lt;value&gt;localhost:6789&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+  &lt;name&gt;hadoop.tmp.dir&lt;/name&gt;
+  &lt;value&gt;/tmp/hadoop&lt;/value&gt;
+&lt;/property&gt;
+</pre>
+
+<p>For NAMENODE, substitute the fully-qualified hostname of the
+namenode.  This should begin with "<code>hdfs://</code>" and end with
+a port number.  The UGI property specifies file permissions you have
+in HDFS and will vary by user.  This should be your username, followed
+by a comma, followed by the group you belong to.  So for me, it would
+be "jimmylin,umd-lin".</p>
+
+<p>The following configuration information goes
+in <b>hdfs-site.xml</b>:</p>
+
+
+<pre>
+&lt;property&gt;
+  &lt;name&gt;fs.default.name&lt;/name&gt;
+  &lt;value&gt;NAMENODE&lt;/value&gt;
+&lt;/property&gt;
+</pre>
+
+<p>Finally, the following configuration information goes
+in <b>mapred-site.xml</b>:</p>
+
+<pre>
+&lt;property&gt;
+  &lt;name&gt;mapred.job.tracker&lt;/name&gt;
+  &lt;value&gt;JOBTRACKER:8021&lt;/value&gt;
+&lt;/property&gt;
+</pre>
+
+<p>Here, substitute JOBTRACKER for its actual IP address.  Port 8021
+is a commonly-used port for the jobtracker.</p>
+
+</div></div>
+
+
+<div class="post">
+<h2>3. Open up a SOCKS proxy</h2>
+<div class="content">
+
+<p>On your local machine, open up a shell and invoke the following
+command:</p>
+
+<pre>
+ssh -D 6789 username@GATEWAY
+</pre>
+
+<p>Make sure you substitute your real username and the actual IP
+address for GATEWAY.  Enter your password and log in when prompted.
+After you've logged in, minimize this window, as you won't need it
+anymore.  The only purpose of connecting to the gateway is to let you
+tunnel directly to the cluster.</p>
+
+<p>Here, I'm assuming that you have ssh installed.  In Windows, your
+best bet is to install <a href="http://www.cygwin.com">Cygwin</a>; ssh
+isn't installed by default, so you'll have to manually specify the
+package.</p>
+
+</div></div>
+
+
+<div class="post">
+<h2>4. Test drive the cluster</h2>
+<div class="content">
+
+<p>With the above steps and bit of luck, you should be able to access
+the Hadoop cluster.  Try things out with a simple command from a new
+shell on your local machine (i.e., <b>not</b> from the ssh shell
+connected to the gateway above):</p>
+
+<pre>
+hadoop fs -ls /
+</pre>
+
+<!-- p>Also, try submitting a job by running the pi demo:</p>
+
+<pre>
+$ hadoop jar hadoop-0.20.1-examples.jar pi 10 100
+</pre>
+
+-->
+
+<p>You should be able to see the contents of HDFS.</p>
+
+<p><b>Note:</b> Hadoop only works with SOCKS v5, so if you have an
+older version of ssh that only supports SOCKS v4, then you should
+upgrade (or get your admin to).  This is a known problem with some
+CLIP machines.  This issue manifests in really unhelpful error
+messages.</p>
+
+<p><b>Note:</b> Windows users under Cygwin might get the following
+error:</p>
+
+<pre>
+javax.security.auth.login.LoginException: Login failed: Expect one token as the result of whoami: Jimmy Lin
+</pre>
+
+<p>The reason for this is that Cygwin uses your Windows username when
+trying to connect to the cluster, which may have a space in it, e.g.,
+"Jimmy Lin" (which causes the above login error).  To fix this, edit
+/etc/password, which in actuality would be <code>c:\cygwin\etc\password</code> if
+your Cygwin install path was <code>c:\cygwin\</code>.  Find the entry for your
+username and remove the space (first field); following standard
+conventions I also like to downcase my entire username, e.g.,
+"jimmylin".  While you're at it you might want to rename your home
+directory also (second to last field).</p>
+
+</div></div>
+
+
+<div class="post">
+<h2>5. Connect to the webapps</h2>
+<div class="content">
+
+<p>To access the jobtracker Webapp, you'll have to get your browser to
+use the SOCKS proxy.  The preferred solution is FoxyProxy for Firefox.
+First, download and install
+FoxyProxy <a href="http://foxyproxy.mozdev.org/">from this link</a>.
+Then, take the following steps:</p>
+
+<ol>
+
+<li>Select menu item "Tools" &gt; "FoxyProxy" &gt; "Options".</li>
+
+<li>Click "Add New Proxy".</li>
+
+<li>In "General" tab, make sure the proxy is enabled.  Give it a name,
+e.g., "Google/IBM cluster"</li>
+
+<li>In "Proxy Details" tab, select "Manual Proxy Configuration", enter
+"127.0.0.1" for "Host Name", 6789 for "Port", check "SOCKS Proxy?",
+and make sure "SOCKS v5" is selected.</li>
+
+<li>In "Patterns" tab, click "Add New Pattern".  Given it a name
+(e.g., "default"), and enter the pattern "http://JOBTRACKER:*/*".
+Substitute the real IP address.</li>
+
+<li>You might want to add a similar pattern for accessing the HDFS
+Webapp on "http://NAMENODE:*/*", or generalize the two into a single
+pattern.  Say the IP address is aaa.bbb.ccc.ddd, you might want to
+enter a pattern like "http://aaa.bbb.*.*:*/*".  Also, to access the
+task logs, you'll need to add a pattern along the lines of
+"http://vm*:*/*".</li>
+
+<li>Click "OK" to finish setting up the proxy.</li>
+
+<li>Back in FoxyProxy Options, change "Mode" to "Use proxies based on
+their pre-defined patterns and priorities".  Click "Close" to finish
+up.</li>
+
+</ol>
+
+<p>If you navigate to <code>http://JOBTRACKER:50030/</code> in your
+browser, you should be able to access the jobtracker!</p>
+
+</div></div>
+
+
+<div class="post">
+<h2>6. Accessing Task Logs</h2>
+<div class="content">
+
+<p>You'll want to access the task logs on the individual cluster
+workers for debugging, but the problem is that the Webapp gives you
+URLs that contain references to Xen virtual machines, something like
+<code>http://vm-XX-XXX-X-XXX:50060/tasklog</code>... Although there's a
+straightforward translation from hostname to IP address, you'd like
+the process to be taken care for you automatically.  The easiest
+solution is to hack your hosts file.</p>
+
+<p>Email me or the admins for the Xen host to IP mappings (I'm not
+posting publicly for obvious security reasons).  Add them to your
+hosts file, the location of which varies by operating system: usually
+<code>%SystemRoot%\system32\drivers\etc\</code> for Windows
+NT/2000/XP/2003/Vista/7, and /etc/ for Linux and other Unix-like
+operating systems.  For more information, consult this
+helpful <a href="http://en.wikipedia.org/wiki/Hosts_file">Wikipedia
+article</a>.</p>
+
+<p>And that's it!  You should now be able to access the task logs.  If
+you still can't, go back to Step 6 in the previous section: one common
+problem is that your FoxyProxy pattern doesn't capture the URL and
+direct connections through the proxy.</p>
+
+<p>There is, however, one minor issue with hacking the hosts
+file... which is that you'll need root privileges.  If for whatever
+reason you don't have root access, there is another solution: a
+Firefox plugin
+called <a href="https://addons.mozilla.org/en-US/firefox/addon/6510">FoxReplace</a>
+nicely solves the problem.  It automatically replaces text in URLs, so
+we just need to give it a Xen host to IP mapping.  Go ahead and
+download the plugin.  Email me for the mappings XML file.</p>
+
+<p>Once you have FoxReplace installed, go through the following steps:</p>
+
+<ol>
+
+  <li>Select menu item "Tools" &gt; "FoxReplace" &gt; "FoxReplace options...".</li>
+
+  <li>Click "Import" and load the XML mappings file you get from me.</li>
+
+  <li>Make sure "Auto-replace on page load" is checked.</li>
+
+  <li>Click "OK" to finish.</li>
+
+</ol>
+
+<p>And that should do it!</p>
+
+</div></div>
+
+<!--- END MAIN CONTENT HERE -->
+
+	</div>
+
+	<!-- main END -->
+
+
+
+		<div class="fixed"></div>
+
+</div>
+
+<!-- content END -->
+
+<!-- footer START -->
+
+<div id="footer">
+<div id="copyright">
+Last updated:
+<script type="text/javascript">
+<!--//
+document.write(document.lastModified);
+//-->
+</script>
+</div>
+
+<div id="themeinfo">
+Adapted from a WordPress Theme by <a href="http://www.neoease.com/">NeoEase</a>. Valid <a href="http://validator.w3.org/check?uri=referer">XHTML 1.1</a> and <a href="http://jigsaw.w3.org/css-validator/check/referer?profile=css3">CSS 3</a>.	</div>
+
+</div>
+
+<!-- footer END -->
+
+
+
+</div>
+
+<!-- container END -->
+
+</div>
+
+<!-- wrap END -->
+
+</body>
+</html>

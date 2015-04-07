@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Cloud9: A MapReduce Library for Hadoop &#187; Exercises &#187; Bigram counts</title>
+<style type="text/css" media="screen">@import url( ../style.css );</style>
+</head>
+
+<body>
+
+<div id="wrap">
+<div id="container" class="one-column" >
+
+<!-- header START -->
+
+<div id="header">
+<div id="caption">
+<h1 id="title" style="color: white;">Cloud<sup><small>9</small></sup></h1>
+<div id="tagline">A MapReduce Library for Hadoop</div>
+</div>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- header END -->
+
+<!-- navigation START -->
+
+<div id="navigation">
+
+<script type="text/javascript" src="menu.js">
+</script>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- navigation END -->
+
+
+
+<!-- content START -->
+
+<div id="content">
+
+
+
+	<!-- main START -->
+
+	<div id="main">
+
+
+<!--- START MAIN CONTENT HERE -->
+
+<h2>Exercises &#187; Bigram counts</h2>
+
+<div class="post">
+<div class="content">
+
+<p>This exercise is a simple extension of the word count demo: in the
+first part of the exercise, you'll be counting bigrams, and in the
+second part of the exercise, you'll be computing bigram relative
+frequencies.</p>
+
+<p>For both parts, feel free to use Hadoop data types in
+Cloud<sup><small>9</small></sup> if you think it's helpful.  You'll
+want to look in the edu.umd.cloud9.io package.</p>
+
+</div></div>
+
+<div class="post">
+<h2>Part I: Count the bigrams</h2>
+<div class="content">
+
+<p>Take the word count example
+<code>edu.umd.cloud9.demo.DemoWordCount</code> and extend it to count
+bigrams.  <a href="http://en.wikipedia.org/wiki/Bigram">Bigrams</a>
+are simply sequences of two consecutive words.  For example, the
+previous sentence contains the following bigrams: "Bigrams are", "are
+simply", "simply sequences", "sequence of", etc.</p>
+
+<p>Work with the sample collection included in
+Cloud<sup><small>9</small></sup>, <a href="../../data/bible+shakes.nopunc.gz">the
+Bible and the complete works of Shakespeare</a>.  Don't worry about
+doing anything fancy in terms of tokenization; it's fine to continue
+using Java's StringTokenizer.</p>
+
+<p>Questions to answer:</p>
+
+<ol>
+
+  <li>How many unique bigrams are there?</li>
+
+  <li>List the top ten most frequent bigrams and their counts.</li>
+
+  <li>What fraction of all bigrams occurrences does the top ten
+  bigrams account for?  That is, what is the cumulative frequency of
+  the top ten bigrams?</li>
+
+  <li>How many bigrams appear only once?</li>
+
+</ol>
+
+</div></div>
+
+
+<div class="post">
+<h2>Part II: From bigram counts to relative frequencies</h2>
+<div class="content">
+
+<p>Extend your program to compute bigram relative frequencies, i.e.,
+how likely you are to observe a word given the preceding word.  The
+output of the code should be a table of values for
+F(W<sub><small>n</small></sub>|W<sub><small>n-1</small></sub>).</p>
+
+<p>Hint: to compute F(B|A), count up the number of occurrences of the
+bigram "A B", and then divide by the number of occurrences of all the
+bigrams that start with "A".</p>
+
+<p>Questions to answer:</p>
+
+<ol>
+
+  <li>What are the five most frequent words following the word
+  "light"?  What is the frequency of observing each word?</li>
+
+  <li>Same question, except for the word "contain".</li>
+
+  <li>If there are a total of <i>N</i> words in your vocabulary, then
+  there are a total of <i>N<sup><small>2</small></sup></i> possible
+  values for
+  F(W<sub><small>n</small></sub>|W<sub><small>n-1</small></sub>)&mdash;in
+  theory, every word can follow every other word (including itself).
+  What fraction of these values are non-zero?  In other words, what
+  proportion of all possible events are actually observed?  To give a
+  concrete example, let's say that following the word "happy", you
+  only observe 100 different words in the text collection.  This means
+  that <i>N</i>-100 words are never seen after "happy" (perhaps the
+  distribution of happiness is quite limited?).</li>
+
+</ol>
+
+</div></div>
+
+<div class="post">
+<h2>Practical Tips</h2>
+<div class="content">
+
+<p>The easiest way to get started is to write a new class directly
+inside the Cloud<sup><small>9</small></sup> project in Eclipse.  Once
+you have some code you want to run, pull up a shell and change
+directory to <code>umd-hadoop-core/build/</code> (this is where
+Eclipse automatically puts compiled class files).  Then create a jar
+with the following command:</p>
+
+<pre>
+jar cvf cloud9.jar *
+</pre>
+
+<p>You can then run the job in standalone mode, on the Google/IBM
+cluster, on EC2, etc.</p>
+
+</div></div>
+
+<div class="post">
+<h2>Solutions</h2>
+<div class="content">
+
+<p>When you're ready, the solutions to this
+exercise <a href="bigrams-solutions.html">are located here</a>.</p>
+
+</div></div>
+
+<p style="padding-top: 25px">&#171; <a href="index.html">Back to exercises</a></p>
+<!--- END MAIN CONTENT HERE -->
+
+	</div>
+
+	<!-- main END -->
+
+
+
+		<div class="fixed"></div>
+
+</div>
+
+<!-- content END -->
+
+<!-- footer START -->
+
+<div id="footer">
+<div id="copyright">
+Last updated:
+<script type="text/javascript">
+<!--//
+document.write(document.lastModified);
+//-->
+</script>
+</div>
+
+<div id="themeinfo">
+Adapted from a WordPress Theme by <a href="http://www.neoease.com/">NeoEase</a>. Valid <a href="http://validator.w3.org/check?uri=referer">XHTML 1.1</a> and <a href="http://jigsaw.w3.org/css-validator/check/referer?profile=css3">CSS 3</a>.	</div>
+
+</div>
+
+<!-- footer END -->
+
+
+
+</div>
+
+<!-- container END -->
+
+</div>
+
+<!-- wrap END -->
+
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Cloud9: A MapReduce Library for Hadoop &#187; Staging records and working with SequenceFiles</title>
+<style type="text/css" media="screen">@import url( ../style.css );</style>
+</head>
+
+<body>
+
+<div id="wrap">
+<div id="container" class="one-column" >
+
+<!-- header START -->
+
+<div id="header">
+<div id="caption">
+<h1 id="title" style="color: white;">Cloud<sup><small>9</small></sup></h1>
+<div id="tagline">A MapReduce Library for Hadoop</div>
+</div>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- header END -->
+
+<!-- navigation START -->
+
+<div id="navigation">
+
+<script type="text/javascript" src="menu.js">
+</script>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- navigation END -->
+
+
+
+<!-- content START -->
+
+<div id="content">
+
+
+
+	<!-- main START -->
+
+	<div id="main">
+
+
+<!--- START MAIN CONTENT HERE -->
+
+<h2>Staging records and working with SequenceFiles</h2>
+
+<div class="post">
+<div class="content">
+
+<p>All MapReduce jobs begin with a collection of records, which
+consists of the initial key-value pairs passed to the mapper.  The
+Hadoop InputFormat interface describes this input specification.
+Simple implementations such as TextInputFormat assume records are text
+blobs stored in a file, one line per record.  This is obviously
+insufficient for more complex record structures.  One solution is keep
+input records in some type of text-based structured format (e.g., XML)
+and write record readers.  The downside is the need to write custom
+code for every record type.  The other downside is that you'll have to
+reparse the text-based input every time.</p>
+
+<p>Once you've become acquainted with the word count demo, you'll want
+to next learn about SequenceFiles in Hadoop.  They are flat files that
+contain a sequence of key-value pairs encoded in a binary format.
+When reading a SequenceFile, Hadoop automatically deserializes the
+keys and values for you.  Therefore, the most straightforward solution
+for preparing input to MapReduce jobs is to preprocess your data to
+create SequenceFiles.  The typical sequence of actions might be:</p>
+
+<ol>
+
+<li>Create SequenceFiles from your input data on your local machine.</li>
+<li>Copy the SequenceFiles over to the cluster (via "scp").</li>
+<li>Copy the SequenceFiles into HDFS (via "hadoop dfs -put").</li>
+<li>Start MapReducing!</li>
+
+</ol>
+
+<p>Creating a SequenceFile is pretty straightforward:</p>
+
+<pre>
+Configuration conf = new Configuration();
+FileSystem fs = FileSystem.get(conf);
+SequenceFile.Writer writer = SequenceFile.createWriter(fs, conf, new Path(outfile),
+    LongWritable.class, JSONObjectWritable.class);
+</pre>
+
+<p>In this case, outfile is the name of the output file.  The key type
+in the SequenceFile is LongWritable, and the value type is
+JSONObjectWritable.  Once you've created the writer, adding key-value
+pairs is easy:</p>
+
+<pre>
+LongWritable l = new LongWritable();
+JSONObjectWritable json = new JSONObjectWritable();
+...
+
+writer.append(l, json);
+</pre>
+
+<p>Remember to close the file when you are done!</p>
+
+<pre>
+writer.close();
+</pre>
+
+</div></div>
+
+
+<div class="post">
+<h2>Reading SequenceFiles</h2>
+<div class="content">
+
+<p>Use the following code fragment for reading SequenceFiles:</p>
+
+<pre>
+Configuration config = new Configuration();
+FileSystem fs = FileSystem.get(config);
+Path path = new Path("/path/to/file");
+SequenceFile.Reader reader = new SequenceFile.Reader(fs, path, config);
+
+WritableComparable key = (WritableComparable) reader.getKeyClass().newInstance();
+Writable value = (Writable) reader.getValueClass().newInstance();
+
+while (reader.next(key, value)) {
+    // do something
+}
+reader.close();
+</pre>
+
+<p>Or easier still, use SequenceFileUtils in
+Cloud<sup><small>9</small></sup> (for example, reading in key-value
+pairs with IntWritable keys and JSONObjectWritable values):</p>
+
+<pre>
+List&lt;KeyValuePair&lt;IntWritable, JSONObjectWritable&gt;&gt; pairs = 
+    SequenceFileUtils.&lt;IntWritable, JSONObjectWritable&gt;readDirectory(path, Integer.MAX_VALUE);
+
+for ( KeyValuePair&lt;IntWritable, JSONObjectWritable&gt; pair : pairs ) {
+    // do something
+}
+</pre>
+
+<p>First argument is the path, the second is the maximum number of
+entries to read.</p>
+
+</div></div>
+
+
+<div class="post">
+<h2>Windows users beware!</h2>
+<div class="content">
+
+<p>On Windows (Cygwin), Hadoop may croak with the following error when
+writing SequenceFiles:</p>
+
+<pre>
+08/08/11 08:55:26 WARN fs.FileSystem: uri=file:///
+javax.security.auth.login.LoginException: Login failed: Expect one token as the result of whoami: Jimmy Lin
+        at org.apache.hadoop.security.UnixUserGroupInformation.login(UnixUserGroupInformation.java:250)
+        at org.apache.hadoop.security.UnixUserGroupInformation.login(UnixUserGroupInformation.java:275)
+        at org.apache.hadoop.security.UnixUserGroupInformation.login(UnixUserGroupInformation.java:257)
+        at org.apache.hadoop.security.UserGroupInformation.login(UserGroupInformation.java:67)
+        at org.apache.hadoop.fs.FileSystem$Cache$Key.&lt;init&gt;(FileSystem.java:1353)
+        at org.apache.hadoop.fs.FileSystem$Cache.get(FileSystem.java:1289)
+        at org.apache.hadoop.fs.FileSystem.get(FileSystem.java:203)
+        at org.apache.hadoop.fs.FileSystem.get(FileSystem.java:108)
+        at edu.umd.cloud9.demo.DemoPackRecords.main(DemoPackRecords.java:69)
+08/08/11 08:55:26 WARN fs.FileSystem: uri=file:///
+javax.security.auth.login.LoginException: Login failed: Expect one token as the result of whoami: Jimmy Lin
+        at org.apache.hadoop.security.UnixUserGroupInformation.login(UnixUserGroupInformation.java:250)
+        at org.apache.hadoop.security.UnixUserGroupInformation.login(UnixUserGroupInformation.java:275)
+        at org.apache.hadoop.security.UnixUserGroupInformation.login(UnixUserGroupInformation.java:257)
+        at org.apache.hadoop.security.UserGroupInformation.login(UserGroupInformation.java:67)
+        at org.apache.hadoop.fs.FileSystem$Cache$Key.&lt;init&gt;(FileSystem.java:1353)
+        at org.apache.hadoop.fs.FileSystem$Cache$Key.&lt;init&gt;(FileSystem.java:1344)
+        at org.apache.hadoop.fs.FileSystem$Cache.get(FileSystem.java:1295)
+        at org.apache.hadoop.fs.FileSystem.get(FileSystem.java:203)
+        at org.apache.hadoop.fs.FileSystem.get(FileSystem.java:108)
+        at edu.umd.cloud9.demo.DemoPackRecords.main(DemoPackRecords.java:69)
+</pre>
+
+<p>The problem is that Windows usernames contain spaces, which Hadoop
+does not expect.  To fix this, in Cygwin edit the /etc/passwd file and
+change your username (first field).</p>
+
+
+</div></div>
+
+<!--- END MAIN CONTENT HERE -->
+
+	</div>
+
+	<!-- main END -->
+
+
+
+		<div class="fixed"></div>
+
+</div>
+
+<!-- content END -->
+
+<!-- footer START -->
+
+<div id="footer">
+<div id="copyright">
+Last updated:
+<script type="text/javascript">
+<!--//
+document.write(document.lastModified);
+//-->
+</script>
+</div>
+
+<div id="themeinfo">
+Adapted from a WordPress Theme by <a href="http://www.neoease.com/">NeoEase</a>. Valid <a href="http://validator.w3.org/check?uri=referer">XHTML 1.1</a> and <a href="http://jigsaw.w3.org/css-validator/check/referer?profile=css3">CSS 3</a>.	</div>
+
+</div>
+
+<!-- footer END -->
+
+
+
+</div>
+
+<!-- container END -->
+
+</div>
+
+<!-- wrap END -->
+
+</body>
+</html>

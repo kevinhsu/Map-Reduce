@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Cloud9: A MapReduce Library for Hadoop &#187; Working with counters</title>
+<style type="text/css" media="screen">@import url( ../style.css );</style>
+</head>
+
+<body>
+
+<div id="wrap">
+<div id="container" class="one-column" >
+
+<!-- header START -->
+
+<div id="header">
+<div id="caption">
+<h1 id="title" style="color: white;">Cloud<sup><small>9</small></sup></h1>
+<div id="tagline">A MapReduce Library for Hadoop</div>
+</div>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- header END -->
+
+<!-- navigation START -->
+
+<div id="navigation">
+
+<script type="text/javascript" src="menu.js">
+</script>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- navigation END -->
+
+
+
+<!-- content START -->
+
+<div id="content">
+
+
+
+	<!-- main START -->
+
+	<div id="main">
+
+
+<!--- START MAIN CONTENT HERE -->
+
+<h2>Working with counters</h2>
+
+<div class="post">
+<div class="content">
+
+<p>Counters are lightweight objects in Hadoop that allow you to keep
+track of system progress in both the map and reduce stages of
+processing.  By default, Hadoop defines a number of standard counters
+in "groups"; these show up in the jobtracker webapp, giving you
+information such as "Map input records", "Map output records", etc.
+This short guide shows you how to programmatically manipulate
+counters, and is up to date as of Hadoop 0.20.1.</p>
+
+</div></div>
+
+<div class="post">
+<h2>Built-In Counters</h2>
+<div class="content">
+
+<p>Here's some sample code that iterates through all available counter
+groups and prints out names of counters in each group:</p>
+
+<pre>
+RunningJob job = JobClient.runJob(conf);
+Counters counters = job.getCounters();
+for (Counters.Group group : counters) {
+    System.out.println("- Counter Group: " + group.getDisplayName() + " (" + group.getName() + ")");
+    System.out.println("  number of counters in this group: " + group.size());
+    for (Counters.Counter counter : group) {
+        System.out.println("  - " + counter.getDisplayName() + ": " + counter.getName());
+    }
+}
+</pre>
+
+<p>In Hadoop 0.20.1, It is a bit awkward to access counter values
+directly.  The easiest way to look up a counter is by an enum, but
+unfortunately the enums that correspond to the built-in counters are
+not publicly accessible.
+See <a href="http://issues.apache.org/jira/browse/HADOOP-4043">JIRA
+HADOOP-4043</a>
+and <a href="http://issues.apache.org/jira/browse/HADOOP-5717">JIRA
+HADOOP-5717</a> for more information about this.  This issue has been
+fixed, and is slated for inclusion in Hadoop 0.21.0</p>
+
+<p>In the meantime, the current working solution is to look up
+counters by their string names, which is more verbose.  Here are the
+group names and names of counters within those individual groups:</p>
+
+<table>
+<tr><td class="myheader">Group Name</td><td class="myheader">Counter Name</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.Task$Counter</td><td class="mycell">MAP_INPUT_RECORDS</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.Task$Counter</td><td class="mycell">MAP_OUTPUT_RECORDS</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.Task$Counter</td><td class="mycell">MAP_SKIPPED_RECORDS</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.Task$Counter</td><td class="mycell">MAP_INPUT_BYTES</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.Task$Counter</td><td class="mycell">MAP_OUTPUT_BYTES</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.Task$Counter</td><td class="mycell">COMBINE_INPUT_RECORDS</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.Task$Counter</td><td class="mycell">COMBINE_OUTPUT_RECORDS</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.Task$Counter</td><td class="mycell">REDUCE_INPUT_GROUPS</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.Task$Counter</td><td class="mycell">REDUCE_SHUFFLE_BYTES</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.Task$Counter</td><td class="mycell">REDUCE_INPUT_RECORDS</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.Task$Counter</td><td class="mycell">REDUCE_OUTPUT_RECORDS</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.Task$Counter</td><td class="mycell">REDUCE_SKIPPED_GROUPS</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.Task$Counter</td><td class="mycell">REDUCE_SKIPPED_RECORDS</td></tr>
+
+<tr><td class="mycell">org.apache.hadoop.mapred.JobInProgress$Counter</td><td class="mycell">TOTAL_LAUNCHED_MAPS</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.JobInProgress$Counter</td><td class="mycell">RACK_LOCAL_MAPS</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.JobInProgress$Counter</td><td class="mycell">DATA_LOCAL_MAPS</td></tr>
+<tr><td class="mycell">org.apache.hadoop.mapred.JobInProgress$Counter</td><td class="mycell">TOTAL_LAUNCHED_REDUCES</td></tr>
+
+<tr><td class="mycell">FileSystemCounters</td><td class="mycell">FILE_BYTES_READ</td></tr>
+<tr><td class="mycell">FileSystemCounters</td><td class="mycell">HDFS_BYTES_READ</td></tr>
+<tr><td class="mycell">FileSystemCounters</td><td class="mycell">FILE_BYTES_WRITTEN</td></tr>
+<tr><td class="mycell">FileSystemCounters</td><td class="mycell">HDFS_BYTES_WRITTEN</td></tr>
+
+</table>
+
+<p>And here is some boilerplate code to access individual counters:</p>
+
+<pre>
+Counters.Counter counter = null;
+
+String[] taskCounterNames = { "MAP_INPUT_RECORDS", "MAP_OUTPUT_RECORDS",
+    "MAP_SKIPPED_RECORDS", "MAP_INPUT_BYTES", "MAP_OUTPUT_BYTES",
+    "COMBINE_INPUT_RECORDS", "COMBINE_OUTPUT_RECORDS", "REDUCE_INPUT_GROUPS",
+    "REDUCE_SHUFFLE_BYTES", "REDUCE_INPUT_RECORDS", "REDUCE_OUTPUT_RECORDS",
+    "REDUCE_SKIPPED_GROUPS", "REDUCE_SKIPPED_RECORDS", "SPILLED_RECORDS" };
+
+for (String c : taskCounterNames) {
+    counter = counters.findCounter("org.apache.hadoop.mapred.Task$Counter", c);
+    System.out.println(counter.getDisplayName() + ": " + counter.getCounter());
+}
+
+String[] jobCounterNames = { "TOTAL_LAUNCHED_MAPS", "RACK_LOCAL_MAPS", "DATA_LOCAL_MAPS",
+    "TOTAL_LAUNCHED_REDUCES" };
+
+for (String c : jobCounterNames) {
+    counter = counters.findCounter("org.apache.hadoop.mapred.JobInProgress$Counter", c);
+    System.out.println(counter.getDisplayName() + ": " + counter.getCounter());
+}
+
+String[] fsCounterNames = { "FILE_BYTES_READ", "HDFS_BYTES_READ", "FILE_BYTES_WRITTEN",
+    "HDFS_BYTES_WRITTEN" };
+
+for (String c : fsCounterNames) {
+    counter = counters.findCounter("FileSystemCounters", c);
+    System.out.println(counter.getDisplayName() + ": " + counter.getCounter());
+}
+</pre>
+
+</div></div>
+
+<div class="post">
+<h2>Custom Counters</h2>
+<div class="content">
+
+<p>In addition to the built-in counters associated with every Hadoop
+job, you can create your own counters.  First, define an enum that
+contains a list of the counters you'd like to have:</p>
+
+<pre>
+protected static enum MyCounter {
+    INPUT_WORDS
+};
+</pre>
+
+<p>Then, in the mapper or reducer, all you have to do is update the
+counter via the reporter object:</p>
+
+<pre>
+reporter.incrCounter(MyCounter.INPUT_WORDS, 1);
+</pre>
+
+<p>You can programmatically access the counters in the following manner:</p>
+
+<pre>
+RunningJob job = JobClient.runJob(conf);  // blocks until job completes
+Counters c = job.getCounters();
+long cnt = c.getCounter(MyCounter.INPUT_WORDS);
+</pre>
+
+<p>Custom counters are very useful in aggregating small bits of
+information.  Pretty simple, huh?</p>
+
+</div></div>
+
+<!--- END MAIN CONTENT HERE -->
+
+	</div>
+
+	<!-- main END -->
+
+
+
+		<div class="fixed"></div>
+
+</div>
+
+<!-- content END -->
+
+<!-- footer START -->
+
+<div id="footer">
+<div id="copyright">
+Last updated:
+<script type="text/javascript">
+<!--//
+document.write(document.lastModified);
+//-->
+</script>
+</div>
+
+<div id="themeinfo">
+Adapted from a WordPress Theme by <a href="http://www.neoease.com/">NeoEase</a>. Valid <a href="http://validator.w3.org/check?uri=referer">XHTML 1.1</a> and <a href="http://jigsaw.w3.org/css-validator/check/referer?profile=css3">CSS 3</a>.	</div>
+
+</div>
+
+<!-- footer END -->
+
+
+
+</div>
+
+<!-- container END -->
+
+</div>
+
+<!-- wrap END -->
+
+</body>
+</html>

@@ -1,0 +1,8 @@
+build
+cloud9.jar
+etc/junit.*
+etc/run.*
+docs/api
+docs/regression-results
+*~
+

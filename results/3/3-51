@@ -1,0 +1,21 @@
+input path: /Users/mac/Documents/workspace/MapReduceAssignment/results/buildinvertedindex
+/Users/mac/Documents/workspace/MapReduceAssignment/results/buildinvertedindex/part-00000
+<hist gram of each work>
+term: juliet
+1: 220
+
+term: macbeth
+1: 298
+2: 3
+3: 2
+
+term: king
+1: 4519
+2: 393
+3: 66
+4: 8
+5: 5
+6: 1
+
+
+the docno of the line which contains "martino": 5061544

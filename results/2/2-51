@@ -1,0 +1,15 @@
+input path: /Users/mac/Documents/workspace/MapReduceAssignment/results/bigramrelativefrequency
+/Users/mac/Documents/workspace/MapReduceAssignment/results/bigramrelativefrequency/part-00000
+(romeo, *)	276.0
+(romeo, and)	0.14130434
+(romeo, i)	0.061594203
+(romeo, is)	0.039855074
+(romeo, o)	0.036231883
+(romeo, what)	0.028985508
+
+p(romeo) = 0.0032
+p(is|romeo) = 0.039855074
+p(the|is) = 0.08581022
+p(king|the) = 0.02218946
+
+Bigram probability of "romeo is the king" is: 2.4283952E-7

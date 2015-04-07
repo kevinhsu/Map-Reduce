@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Cloud9: A MapReduce Library for Hadoop &#187; Exercises &#187; PageRank</title>
+<style type="text/css" media="screen">@import url( ../style.css );</style>
+</head>
+
+<body>
+
+<div id="wrap">
+<div id="container" class="one-column" >
+
+<!-- header START -->
+
+<div id="header">
+<div id="caption">
+<h1 id="title" style="color: white;">Cloud<sup><small>9</small></sup></h1>
+<div id="tagline">A MapReduce Library for Hadoop</div>
+</div>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- header END -->
+
+<!-- navigation START -->
+
+<div id="navigation">
+
+<script type="text/javascript" src="menu.js">
+</script>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- navigation END -->
+
+
+
+<!-- content START -->
+
+<div id="content">
+
+
+
+	<!-- main START -->
+
+	<div id="main">
+
+
+<!--- START MAIN CONTENT HERE -->
+
+<h2>Exercises &#187; PageRank</h2>
+
+<div class="post">
+<div class="content">
+
+<p>In this exercise, you are going to implement PageRank in MapReduce.
+Here are three separate graphs to work with:</p>
+
+<ul>
+
+  <li><a href="./sample-small.txt">a "small" one</a> (93 nodes, 195 edges)</li>
+
+  <li><a href="./sample-medium.txt">a "medium" one</a> (316 nodes, 430 edges)</li>
+
+  <li><a href="./sample-large.txt">a "large" one</a> (1458 nodes, 3545 edges)</li>
+
+</ul>
+ 
+<p>Of course, these are just toy datasets, since 1458 nodes wouldn't
+qualify as "large" by any stretch of the imagination...</p>
+
+<p>The files are tab-delimited adjacency list representations of the
+graphs.  The first token on each line represents the unique id of the
+source node, and the rest of the tokens represent the target nodes
+(i.e., outlinks from the source node).  If a node does not have any
+outlinks, its corresponding line will contain only one token (the
+source node id).</p>
+
+<p>To make your lives easier, I've created a small demo program that
+computes PageRank using
+the <a href="http://jung.sourceforge.net/">JUNG</a> package (2.0.1).
+The relevant class
+is <code>edu.umd.cloud9.demo.SequentialPageRank</code>, which takes
+two command-line arguments: the first is a file containing the graph
+(one of the ones above), and the second is the random jump factor (a
+typical setting is 0.15).</p>
+
+<p>If you run the program on the small network, with a random jump
+factor of 0.15, these will be your command-line arguments:</p>
+
+<pre>docs/exercises/sample-small.txt 0.15</pre>
+
+<p>And here's the sample output:</p>
+
+<pre>
+Number of components: 1
+Number of edges: 195
+Number of nodes: 93
+Random jump factor: 0.15
+
+PageRank of nodes, in descending order:
+0.04821884416235794	8709207
+0.03471312258467498	11287582
+0.03438927990335218	9650960
+0.033945207898198146	12610128
+0.032378178767292154	8553535
+...
+</pre>
+
+<p>To help in your implementation, I've captured the complete output
+of <code>edu.umd.cloud9.demo.SequentialPageRank</code> for each of the
+above graphs:</p>
+
+<ul>
+
+  <li><a href="./sample-small.pagerank.txt">PageRank values for the
+  small graph</a></li>
+
+  <li><a href="./sample-medium.pagerank.txt">PageRank values for the
+  medium graph</a></li>
+
+  <li><a href="./sample-large.pagerank.txt">PageRank values for the
+  large graph</a></li>
+
+</ul>
+
+</div></div>
+
+<div class="post">
+<h2>Hints</h2>
+<div class="content">
+
+<p>If you're stuck, you might want to take a look at the source code
+of the <a href="http://jung.sourceforge.net/">JUNG</a>
+implementation.</p>
+
+<p>In the networks above, there are a relatively large number of
+dangling nodes, i.e., nodes with no outlinks.  This frequently happens
+in the Web context also; for example, pages the crawler hasn't
+downloaded yet would appear as "dangling".  For these nodes, you'll
+need to figure out how to "spread" its PageRank score to the other
+nodes.</p>
+
+<p>Here's the a good order in which to tackle the various issues:</p>
+
+<ol>
+
+  <li>Build an implementation that does not handle the random jump
+  factor and does not handling dangling nodes.</li>
+
+  <li>Add in support for dangling nodes.</li>
+
+  <li>Add in support for the random jump factor.</li>
+
+</ol>
+
+</div></div>
+
+<div class="post">
+<h2>Postscript</h2>
+<div class="content">
+
+<p>If you're curious: the nodes in these graphs represent MEDLINE
+records (abstracts in the life sciences domain).  The links represent
+content-similarity links, i.e., pairs of abstracts that are similar in
+the words they contain.  For example, consider pmid (unique identifier
+in the MEDLINE collection)
+<a href="http://www.ncbi.nlm.nih.gov/pubmed/8709207">8709207</a>.  See
+the "Related Links" panel on the right hand side of the browser?  The
+data provided above represent instances of graphs defined by such
+links.</p>
+
+</div></div>
+
+<div class="post">
+<h2>Solutions</h2>
+<div class="content">
+
+<p>When you're ready, the solutions to this
+exercise <a href="pagerank-solutions.html">are located here</a>.</p>
+
+</div></div>
+
+<p style="padding-top: 25px">&#171; <a href="index.html">Back to exercises</a></p>
+<!--- END MAIN CONTENT HERE -->
+
+	</div>
+
+	<!-- main END -->
+
+
+
+		<div class="fixed"></div>
+
+</div>
+
+<!-- content END -->
+
+<!-- footer START -->
+
+<div id="footer">
+<div id="copyright">
+Last updated:
+<script type="text/javascript">
+<!--//
+document.write(document.lastModified);
+//-->
+</script>
+</div>
+
+<div id="themeinfo">
+Adapted from a WordPress Theme by <a href="http://www.neoease.com/">NeoEase</a>. Valid <a href="http://validator.w3.org/check?uri=referer">XHTML 1.1</a> and <a href="http://jigsaw.w3.org/css-validator/check/referer?profile=css3">CSS 3</a>.	</div>
+
+</div>
+
+<!-- footer END -->
+
+
+
+</div>
+
+<!-- container END -->
+
+</div>
+
+<!-- wrap END -->
+
+</body>
+</html>

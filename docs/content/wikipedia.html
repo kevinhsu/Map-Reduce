@@ -1,0 +1,358 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Cloud9: A MapReduce Library for Hadoop &#187; Working with Wikipedia</title>
+<style type="text/css" media="screen">@import url( ../style.css );</style>
+</head>
+
+<body>
+
+<div id="wrap">
+<div id="container" class="one-column" >
+
+<!-- header START -->
+
+<div id="header">
+<div id="caption">
+<h1 id="title" style="color: white;">Cloud<sup><small>9</small></sup></h1>
+<div id="tagline">A MapReduce Library for Hadoop</div>
+</div>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- header END -->
+
+<!-- navigation START -->
+
+<div id="navigation">
+
+<script type="text/javascript" src="menu.js">
+</script>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- navigation END -->
+
+
+
+<!-- content START -->
+
+<div id="content">
+
+
+
+	<!-- main START -->
+
+	<div id="main">
+
+
+<!--- START MAIN CONTENT HERE -->
+
+<h2>Working with Wikipedia</h2>
+
+<div class="post">
+<div class="content">
+
+<p>For several reasons, Wikipedia is among the most popular datasets
+to process with Hadoop: it's big, it contains a lot of text, and it
+has a rich link structure.  And perhaps most important of all,
+Wikipedia can be freely downloaded by anyone.  Where do you get it?
+See <a href="http://en.wikipedia.org/wiki/Wikipedia_database">this
+page</a> for information about raw Wikipedia dumps in XML.  Direct
+access to English Wikipedia dumps can be
+found <a href="http://download.wikimedia.org/enwiki/">here</a>.</p>
+
+<p>In this guide, we'll be working with the XML dump of English
+Wikipedia dated Jan. 30, 2010 (<code>enwiki-20100130-pages-articles.xml</code>).
+Note that Wikipedia is distributed as a single, large XML file
+compressed with bzip2.  We'll want to repack the dataset as
+block-compressed SequenceFiles (see below), so you should uncompress
+the file before putting it into HDFS.</p>
+
+<p>Aside: why do we want to uncompress the XML file?  Although
+bzip2-compressed files are splittable, the decompression algorithm is
+slow and cannot keep up with the streaming disk reads that are common
+in Hadoop jobs.  See
+a <a href="http://www.cloudera.com/blog/2009/11/hadoop-at-twitter-part-1-splittable-lzo-compression/">Cloudera
+blog post about this subject</a> for more details.</p>
+
+<p>As a sanity check, the first thing you might want to do is count
+how many pages there are in this particular version of Wikipedia:</p>
+
+<pre>
+hadoop jar cloud9.jar edu.umd.cloud9.collection.wikipedia.DemoCountWikipediaPages \
+/shared/Wikipedia/raw/enwiki-20100130-pages-articles.xml
+</pre>
+
+<p>Conveniently enough, Cloud<sup><small>9</small></sup> provides a
+WikipediaPageInputFormat that automatically parses the XML dump file,
+so that your mapper will be presented WikipediaPage objects to
+process.</p>
+
+<p>After running the above program, you'll see:</p>
+
+<table>
+<tr><td class="myheader"><b>Type</b></td>
+    <td class="myheader"><b>Count</b></td>
+</tr>
+
+<tr>
+<td class="mycell" align="left">Redirect pages</td>
+<td class="mycell" style="text-align:right;">3,614,074</td>
+</tr>
+
+<tr>
+<td class="mycell" align="left">Disambiguation pages</td>
+<td class="mycell" style="text-align:right;">95,679</td>
+</tr>
+
+<tr>
+<td class="mycell" align="left">Empty pages</td>
+<td class="mycell" style="text-align:right;">561</td>
+</tr>
+
+<tr>
+<td class="mycell" align="left">Stub articles</td>
+<td class="mycell" style="text-align:right;">1,403,062</td>
+</tr>
+
+<tr>
+<td class="mycell" align="left">Total articles (including stubs)</td>
+<td class="mycell" style="text-align:right;">5,830,993</td>
+</tr>
+
+<tr>
+<td class="mycell" align="left"><b>Total</b></td>
+<td class="mycell" style="text-align:right;">9,541,307</td>
+</tr>
+
+</table>
+
+<p>So far, so good!</p>
+
+</div></div>
+
+<div class="post">
+<h2>Sequentially-Numbered Docnos</h2>
+<div class="content">
+
+<p>Many information retrieval and other text processing tasks require
+that all documents in the collection be sequentially numbered, from 1
+... <i>n</i>.  Typically, you'll want to start with document 1 as
+opposed to 0 because it is not possible to represent 0 with many
+standard compression schemes used in information retrieval (i.e.,
+Golomb codes).</p>
+
+<p>The next step is to create a mapping from Wikipedia internal
+document ids (docids) to these sequentially-numbered ids (docnos).
+Although, in general, docids can be arbitrary alphanumeric strings,
+we'll be using Wikipedia internal ids (which happend to be integers,
+but we'll treat as strings) as the docids.  This is a bit confusing,
+so we'll illustrate.  The first page in
+<code>enwiki-20100130-pages-articles.xml</code> is:</p>
+
+<pre>
+  ...
+  &lt;page&gt;
+    &lt;title&gt;AccessibleComputing&lt;/title&gt;
+    &lt;id&gt;10&lt;/id&gt;
+    &lt;redirect /&gt;
+  ...
+</pre>
+
+<p>So this page gets docid "10" (the Wikipedia internal id) and docno
+1 (the sequentially-numbered id).  We can build the mapping between
+docids and docnos by the following command:</p>
+
+<pre>
+hadoop jar cloud9.jar edu.umd.cloud9.collection.wikipedia.BuildWikipediaDocnoMapping \
+ /shared/Wikipedia/raw/enwiki-20100130-pages-articles.xml \
+ /tmp/wikipedia-docid-tmp /shared/Wikipedia/docno-en-20100130.dat 100
+</pre>
+
+<p>The first command-line argument is the input XML file; the second
+is a temp directory, the third is the location of the output mappings
+file, and the fourth is the number of mappers to run.  The mappings is
+used by the class WikipediaDocnoMapping, which provides a nice API for
+mapping back and forth between docnos and docids.</p>
+
+<p>Aside: Why not use the article titles are docids?  We could, but
+since we need to maintain the docid to docno mapping in memory (for
+fast lookup), using article titles as docids would be expensive (lots
+of strings to store in memory).</p>
+
+</div></div>
+
+<div class="post">
+<h2>Repacking the Records</h2>
+<div class="content">
+
+<p>So far, we've been directly processing the raw uncompressed
+Wikipedia data dump in XML.  To gain the benefits of compression
+(within the Hadoop framework), we'll now repack the XML file into
+block-compressed SequenceFiles, where the keys are the docnos, and the
+values are WikipediaPage objects.  This will make subsequent
+processing much easier.</p>
+
+<p>Here's the command-line invocation:</p>
+
+<pre>
+hadoop jar cloud9.jar edu.umd.cloud9.collection.wikipedia.RepackWikipedia \
+ /shared/Wikipedia/raw/enwiki-20100130-pages-articles.xml \
+ /shared/Wikipedia/compressed.block/en-20100130 \
+ /shared/Wikipedia/docno-en-20100130.dat block
+</pre>
+
+<p>The first command-line argument specifies the input XML file; the
+second specifies the output directory; the third specifies the docno
+mappings file (from above); the fourth specifies block
+compression.</p>
+
+<p>In addition to block-compression, the program RepackWikipedia also
+supports record-level compression as well as no compression.  Here's
+how they stack up:</p>
+
+<table>
+<tr><td class="myheader"><b>Format</b></td>
+    <td class="myheader"><b>Size (bytes)</b></td>
+</tr>
+
+<tr>
+<td class="mycell" align="left">Original XML dump (bzip2-compressed)</td>
+<td class="mycell" style="text-align:right;">5,983,814,213</td>
+</tr>
+
+<tr>
+<td class="mycell" align="left">Original XML dump (uncompressed)</td>
+<td class="mycell" style="text-align:right;">26,731,765,797</td>
+</tr>
+
+<tr>
+<td class="mycell" align="left">SequenceFiles (block-compressed)</td>
+<td class="mycell" style="text-align:right;">7,743,355,075</td>
+</tr>
+
+<tr>
+<td class="mycell" align="left">SequenceFiles (record-compressed)</td>
+<td class="mycell" style="text-align:right;">10,690,339,155</td>
+</tr>
+
+<tr>
+<td class="mycell" align="left">SequenceFiles (no compression)</td>
+<td class="mycell" style="text-align:right;">26,926,795,252</td>
+</tr>
+
+</table>
+
+<p>Block-compressed SequenceFiles are larger than the bzip2-compressed
+original XML files, but are easier to manipulate in Hadoop (since
+SequenceFiles are very common and there's lots of existing code to
+work with SequenceFiles).  Record-compressed SequenceFiles are less
+space-efficient, but retain the ability to directly seek to any
+WikipediaPage object (whereas with block compression you can only seek
+to block boundaries).  In most usage scenarios, block-compressed
+SequenceFiles are preferred.  As expected, without compression,
+SequenceFiles are larger than the original XML files (due to headers,
+delimiters, sync markers, etc.).</p>
+
+</div></div>
+
+<div class="post">
+<h2>Supporting Random Access</h2>
+<div class="content">
+
+<p>Cloud<sup><small>9</small></sup> provides utilities for random
+access to Wikipedia articles.  First, we need to build a forward
+index:</p>
+
+<pre>
+hadoop jar cloud9.jar edu.umd.cloud9.collection.wikipedia.BuildWikipediaForwardIndex \
+  /shared/Wikipedia/compressed.block/en-20100130 /tmp/wikipedia-findex-tmp \
+  /shared/Wikipedia/compressed.block/findex-en-20100130.dat
+</pre>
+
+<p>With this forward index, we can now programmatically access
+Wikipedia articles given docno or docid.  For example:</p>
+
+<pre>
+WikipediaForwardIndex f = new WikipediaForwardIndex();
+
+f.loadIndex("/shared/Wikipedia/compressed.block/findex-en-20100130.dat",
+    "/shared/Wikipedia/docno-en-20100130.dat");
+
+WikipediaPage page;
+
+// fetch docno
+page = f.getDocument(1000);
+System.out.println(page.getDocid() + ": " + page.getTitle());
+
+// fetch docid
+page = f.getDocument("1875");
+System.out.println(page.getDocid() + ": " + page.getTitle());
+</pre>
+
+<p>There's also a web interface for browsing, which can be started
+with the following invocation:</p>
+
+<pre>
+hadoop jar cloud9.jar edu.umd.cloud9.collection.DocumentForwardIndexHttpServer \
+  /shared/Wikipedia/compressed.block/findex-en-20100130.dat \
+  /shared/Wikipedia/docno-en-20100130.dat
+</pre>
+
+<p>When the server starts up, it'll report back the host information
+of the node it's running on (along with the port). You can then direct
+your browser at the relevant URL and gain access to the webapp.</p>
+
+</div></div>
+
+<!--- END MAIN CONTENT HERE -->
+
+	</div>
+
+	<!-- main END -->
+
+
+
+		<div class="fixed"></div>
+
+</div>
+
+<!-- content END -->
+
+<!-- footer START -->
+
+<div id="footer">
+<div id="copyright">
+Last updated:
+<script type="text/javascript">
+<!--//
+document.write(document.lastModified);
+//-->
+</script>
+</div>
+
+<div id="themeinfo">
+Adapted from a WordPress Theme by <a href="http://www.neoease.com/">NeoEase</a>. Valid <a href="http://validator.w3.org/check?uri=referer">XHTML 1.1</a> and <a href="http://jigsaw.w3.org/css-validator/check/referer?profile=css3">CSS 3</a>.	</div>
+
+</div>
+
+<!-- footer END -->
+
+
+
+</div>
+
+<!-- container END -->
+
+</div>
+
+<!-- wrap END -->
+
+</body>
+</html>

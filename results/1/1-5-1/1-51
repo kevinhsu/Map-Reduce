@@ -1,0 +1,28 @@
+input path: /Users/mac/Documents/workspace/MapReduceAssignment/results/bigramcount
+/Users/mac/Documents/workspace/MapReduceAssignment/results/bigramcount/part-00000
+total number of unique bigrams: 424462
+total number of bigrams: 1578220
+number of bigrams that appear only once: 296139
+number of bigrams that appear only twice: 52967
+
+ten most frequent bigrams: 
+of the	13037
+and the	7034
+the lord	7017
+in the	6738
+to the	3799
+i will	3470
+and he	3020
+shall be	3013
+all the	2714
+i have	2666
+i am	2603
+for the	2231
+and they	2185
+unto the	2163
+the king	2062
+and i	2003
+out of	1961
+my lord	1869
+it is	1833
+of his	1720

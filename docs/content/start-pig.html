@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Cloud9: A MapReduce Library for Hadoop &#187; Getting started with Pig</title>
+<style type="text/css" media="screen">@import url( ../style.css );</style>
+</head>
+
+<body>
+
+<div id="wrap">
+<div id="container" class="one-column" >
+
+<!-- header START -->
+
+<div id="header">
+<div id="caption">
+<h1 id="title" style="color: white;">Cloud<sup><small>9</small></sup></h1>
+<div id="tagline">A MapReduce Library for Hadoop</div>
+</div>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- header END -->
+
+<!-- navigation START -->
+
+<div id="navigation">
+
+<script type="text/javascript" src="menu.js">
+</script>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- navigation END -->
+
+
+
+<!-- content START -->
+
+<div id="content">
+
+
+
+	<!-- main START -->
+
+	<div id="main">
+
+
+<!--- START MAIN CONTENT HERE -->
+
+<h2>Getting started with Pig</h2>
+
+<div class="post">
+<div class="content">
+
+<p>This guide will get you started with Pig on the Google/IBM CLuE
+cluster.  Thanks to Ashwini Sonavane for helping me gather some of the
+materials here.</p>
+
+<p>It's assumed that you've already connected successfully to the CLuE
+cluster; if not see <a href="start-Google-cluster.html">this getting
+started guide</a>.  To get started, download
+Pig <a href="http://hadoop.apache.org/pig/releases.html">here</a>.
+The current latest version is 0.7.0, released on May 13, 2010.  Unpack
+the distribution.</p>
+
+</div></div>
+
+<div class="post">
+<h2>Setting Up the Environment</h2>
+<div class="content">
+
+<p>You'll need to set up a number of environment variables.  The first
+specifies the version of Hadoop:</p>
+
+<pre>
+export PIG_HADOOP_VERSION=20
+</pre>
+
+<p>The second should point to your Hadoop distribution, with the
+proper XML configuration files to connect to the CLuE cluster:</p>
+
+<pre>
+export PIG_CLASSPATH=/path/to/hadoop/conf
+</pre>
+
+<p>Finally, add Pig to your path:</p>
+
+<pre>
+export PATH=/path/to/pig/bin:$PATH
+</pre>
+
+<p>And that's basically it!  You should now be able to pop into the Grunt shell:</p>
+
+<pre>
+pig
+</pre>
+
+<p>Watch for these two info messages:</p>
+
+<pre>
+Connecting to hadoop file system at: xxx
+Connecting to map-reduce job tracker at: yyy
+</pre>
+
+<p>You should see the CLuE cluster namenode and jobtracker where xxx
+and yyy appear in the above messages.  On the other hand, if you see
+something like:</p>
+
+<pre>
+Connecting to hadoop file system at: file:///
+</pre>
+
+<p>This means that Pig wasn't able to connect to the cluster.</p>
+
+</div></div>
+
+<div class="post">
+<h2>Word Count in Pig</h2>
+<div class="content">
+
+<p>No demo would be complete without a word count example, right?
+Let's start by putting our sample collection in HDFS:</p>
+
+<pre>
+hadoop fs -put bible+shakes.nopunc /tmp
+</pre>
+
+<p>Here's a script that performs word count:</p>
+
+<pre>
+A = load '/tmp/bible+shakes.nopunc';
+B = foreach A generate flatten(TOKENIZE((chararray)$0)) as word;
+C = filter B by word matches '\\w+';
+D = group C by word;
+E = foreach D generate COUNT(C) as count, group as word;
+F = order E by count desc;
+store F into '/tmp/wc';
+</pre>
+
+<p>You can see that in the output, we have words in the collection
+sorted by decreasing frequency:</p>
+
+<pre>
+$ hadoop fs -cat /tmp/wc/part-r-00000 | head -10
+93739   the
+79182   and
+53121   of
+33929   to
+30240   i
+24407   that
+24350   in
+23504   a
+17312   my
+17087   he
+</pre>
+
+<p>By changing one line, we can sort alphabetically by word instead:</p>
+
+<pre>
+F = order E by word;
+</pre>
+
+<p>Try doing that in Java (and see how many lines that takes)!</p>
+
+</div></div>
+
+<!--- END MAIN CONTENT HERE -->
+
+	</div>
+
+	<!-- main END -->
+
+
+
+		<div class="fixed"></div>
+
+</div>
+
+<!-- content END -->
+
+<!-- footer START -->
+
+<div id="footer">
+<div id="copyright">
+Last updated:
+<script type="text/javascript">
+<!--//
+document.write(document.lastModified);
+//-->
+</script>
+</div>
+
+<div id="themeinfo">
+Adapted from a WordPress Theme by <a href="http://www.neoease.com/">NeoEase</a>. Valid <a href="http://validator.w3.org/check?uri=referer">XHTML 1.1</a> and <a href="http://jigsaw.w3.org/css-validator/check/referer?profile=css3">CSS 3</a>.	</div>
+
+</div>
+
+<!-- footer END -->
+
+
+
+</div>
+
+<!-- container END -->
+
+</div>
+
+<!-- wrap END -->
+
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Cloud9: A MapReduce Library for Hadoop &#187; Exercises &#187; Boolean retrieval</title>
+<style type="text/css" media="screen">@import url( ../style.css );</style>
+</head>
+
+<body>
+
+<div id="wrap">
+<div id="container" class="one-column" >
+
+<!-- header START -->
+
+<div id="header">
+<div id="caption">
+<h1 id="title" style="color: white;">Cloud<sup><small>9</small></sup></h1>
+<div id="tagline">A MapReduce Library for Hadoop</div>
+</div>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- header END -->
+
+<!-- navigation START -->
+
+<div id="navigation">
+
+<script type="text/javascript" src="menu.js">
+</script>
+
+<div class="fixed"></div>
+
+</div>
+
+<!-- navigation END -->
+
+
+
+<!-- content START -->
+
+<div id="content">
+
+
+
+	<!-- main START -->
+
+	<div id="main">
+
+
+<!--- START MAIN CONTENT HERE -->
+
+<h2>Exercises &#187; Boolean retrieval</h2>
+
+<div class="post">
+<div class="content">
+
+<p>Write a Boolean retrieval engine that uses the index created in the
+<a href="indexer.html">inverted index construction</a> exercise.  Your
+retrieval engine should be able to handle complex Boolean queries of
+the following form:</p>
+
+<pre>
+( slings AND arrows ) OR ( mortal AND coil )
+( et AND tu AND brute )
+</pre>
+
+<p>As a note, the inverted index you constructed in the previous
+exercise is specifically designed for ranked retrieval.  For Boolean
+retrieval, the
+<i>df</i> and <i>tf</i> of terms are not used.</p>
+
+<p>Your system will need to parse nested Boolean queries.  To make
+query processing simpler, you can choose the notation in which the
+queries are expressed: <a
+href="http://en.wikipedia.org/wiki/Infix_notation">infix notation</a>
+(as above) or <a
+href="http://en.wikipedia.org/wiki/Polish_notation">prefix
+notation</a>, e.g., "(AND slings arrows)".  In fact, you can even
+write a query parser that uses <a
+href="http://en.wikipedia.org/wiki/Reverse_Polish_notation">reverse
+polish notation</a>&mdash;it has many advantages, one of which is that
+all expressions can be unambiguously interpreted without parentheses.
+As a hint, reverse polish notation actually yields the simplest
+implementation.</p>
+
+<p>As with previous exercises, use the sample input included in
+Cloud<sup><small>9</small></sup>, <a
+href="../../data/bible+shakes.nopunc.gz">the Bible and the complete
+works of Shakespeare</a>.  As a bare minimum, your Boolean retrieval
+engine must be able to:</p>
+
+<ul>
+
+  <li>Process arbitrarily complex, nested queries, implementing both
+  the "AND" and "OR" operators.</li>
+
+  <li>Return the docno and full text of the lines from the sample
+  collection that matches the query.</li>
+
+</ul>
+
+<p>For example, in response to the query "outrageous AND fortune",
+your retrieval engine should return something like:</p>
+
+<pre>
+4442172  the slings and arrows of outrageous fortune
+</pre>
+
+<p>To give another example, in response to the query "white AND rose",
+your retrieval engine should return something like:</p>
+
+<pre>
+7841087  from off this brier pluck a white rose with me
+7841354  i pluck this white rose with plantagenet
+7841879  giving my verdict on the white rose side
+7841972  lest bleeding you do paint the white rose red
+7842315  in sign whereof i pluck a white rose too
+7842458  shall dye your white rose in a bloody red
+7845524  shall send between the red rose and the white
+8237199  until the white rose that i wear be dyed
+8275306  the red rose and the white are on his face
+9067070  we will unite the white rose and the red
+</pre>
+
+<p>Once you have the Boolean search engine working, try out these
+sample queries:</p>
+
+<pre>
+means AND deceit
+(white OR red ) AND rose AND pluck
+(unhappy OR outrageous OR (good AND your)) AND fortune
+</pre>
+
+</div></div>
+
+<div class="post">
+<h2>Practical Tips</h2>
+<div class="content">
+
+<p>This exercise is meant to be completed outside of Hadoop.  Build
+your inverted index in Hadoop, as per the <a
+href="indexer.html">inverted index construction</a> exercise.  If you
+set the number of reducers to one, all the postings will be written to
+a single file.  This will make the index easier to manipulate.
+Obviously, this isn't a scalable solution, but it will suffice for
+this exercise.  Retrieve your index from HDFS with the <code>hadoop fs
+-get</code> command.  Implement your Boolean retrieval engine to
+manipulate the inverted index stored on your local machine.</p>
+
+</div></div>
+
+<div class="post">
+<h2>Extensions</h2>
+<div class="content">
+
+<p>Some optional features you might want to consider implementing
+are:</p>
+
+<ul>
+
+  <li>Support for the boolean "NOT" operator.  Or try the "AND-NOT"
+  operator, which is a bit easier.  The query "(a AND-NOT b)"
+  retrieves documents that contain a, but not b.</li>
+
+  <li>Ordering of retrieved documents based on the number of matching
+  terms (or something similarly sensical).  For example, given the
+  query "(a AND b)", lines that have four occurrences of the query
+  terms should be place ahead of lines that have three occurrences of
+  the query terms.</li>
+
+</ul>
+
+</div></div>
+
+<p style="padding-top: 25px">&#171; <a href="index.html">Back to exercises</a></p>
+<!--- END MAIN CONTENT HERE -->
+
+	</div>
+
+	<!-- main END -->
+
+
+
+		<div class="fixed"></div>
+
+</div>
+
+<!-- content END -->
+
+<!-- footer START -->
+
+<div id="footer">
+<div id="copyright">
+Last updated:
+<script type="text/javascript">
+<!--//
+document.write(document.lastModified);
+//-->
+</script>
+</div>
+
+<div id="themeinfo">
+Adapted from a WordPress Theme by <a href="http://www.neoease.com/">NeoEase</a>. Valid <a href="http://validator.w3.org/check?uri=referer">XHTML 1.1</a> and <a href="http://jigsaw.w3.org/css-validator/check/referer?profile=css3">CSS 3</a>.	</div>
+
+</div>
+
+<!-- footer END -->
+
+
+
+</div>
+
+<!-- container END -->
+
+</div>
+
+<!-- wrap END -->
+
+</body>
+</html>
